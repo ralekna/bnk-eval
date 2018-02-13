@@ -20,8 +20,8 @@ export default class ConverterView extends Component {
 
   static propTypes = {
     rates: PropTypes.arrayOf(PropTypes.shape({
-      code: PropTypes.string,
-      rate_float: PropTypes.number
+      code: PropTypes.string.isRequired,
+      rate_float: PropTypes.number.isRequired
     })),
     onRefreshRequest: PropTypes.func
   };
@@ -97,7 +97,8 @@ export default class ConverterView extends Component {
             </IconButton>}
         />
         {this.state.rates.length === 0 && <LinearProgress mode="indeterminate" />}
-        <div style={{padding: '20px 15px 16px 16px'}}>
+
+        <div style={{padding: '16px'}}>
           <div>
             <TextField
               floatingLabelText="Enter amount of BTC"
@@ -135,6 +136,10 @@ export default class ConverterView extends Component {
 
           />)}
         </List>
+        <div style={{fontSize: '11px', padding: '16px'}}>
+          {this.props.status !== undefined && <div style={{color: 'rgba(0, 0, 0, 0.54)'}}>{this.props.status}</div>}
+          {this.props.error !== undefined && <div style={{color: 'rgba(255, 0, 0, 1)'}}>{this.props.error}</div>}
+        </div>
       </Card>
     );
   }

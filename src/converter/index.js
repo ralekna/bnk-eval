@@ -3,10 +3,12 @@ import ConverterView from './ConverterView';
 
 export default class Converter extends Component {
 
-  constructor () {
+  constructor() {
     super();
-    this.state = { loading: true };
-
+    this.state = {
+      rates: [],
+      status: 'Loading...'
+    };
   }
 
   componentWillMount() {
@@ -16,21 +18,28 @@ export default class Converter extends Component {
   async fetchRates() {
     try {
       let result = await(await fetch('https://api.coindesk.com/v1/bpi/currentprice.json')).json();
-      console.log(result);
       this.setState({
-        loading: true,
-        rates: Object.values(result.bpi)
+        rates: Object.values(result.bpi),
+        status: `Rates updated on: ${result.time.updated}`,
+        error: undefined
       });
-
     } catch (error) {
-      console.error('Failed to load data', error);
+      this.setState({
+        rates: [],
+        status: undefined,
+        error: 'Failed to load rates data'
+      });
     }
-
   }
 
   render() {
     return (
-      <ConverterView rates={this.state.rates} onRefreshRequest={this.fetchRates.bind(this)}/>
+      <ConverterView
+        rates={this.state.rates}
+        onRefreshRequest={this.fetchRates.bind(this)}
+        status={this.state.status}
+        error={this.state.error}
+      />
     );
   }
 }
