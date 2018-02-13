@@ -2,9 +2,14 @@ import React, { Component } from 'react';
 import TextField from 'material-ui/TextField';
 import SelectField from 'material-ui/SelectField';
 import MenuItem from 'material-ui/MenuItem';
+import Card from 'material-ui/Card';
+import LinearProgress from 'material-ui/LinearProgress';
 import {List, ListItem} from 'material-ui/List';
-// import { string, object, array } from 'prop-types';
+import AppBar from 'material-ui/AppBar';
+import PropTypes from 'prop-types';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
+import NavigationRefresh from 'material-ui/svg-icons/navigation/refresh';
+import IconButton from 'material-ui/IconButton';
 import * as R from 'ramda';
 
 export default class ConverterView extends Component {
@@ -13,8 +18,17 @@ export default class ConverterView extends Component {
     rates: []
   };
 
+  static propTypes = {
+    rates: PropTypes.arrayOf(PropTypes.shape({
+      code: PropTypes.string,
+      rate_float: PropTypes.number
+    })),
+    onRefreshRequest: PropTypes.func
+  };
+
   state = {
     amount: 0,
+    hasAmountError: false,
     rates: this.props.rates,
     removedRates: [],
     displayedRates: this.props.rates.concat()
@@ -49,9 +63,12 @@ export default class ConverterView extends Component {
   }
 
   updateAmount(event) {
-    this.setState({
-      amount: event.target.value
-    });
+    const amount = event.target.value;
+    const hasAmountError = !/^\d*\.?\d*$/.test(amount.trim());
+    this.setState(prevState => ({
+      amount: hasAmountError ? prevState.amount : amount,
+      hasAmountError
+    }));
   }
 
   addRateToList(rate) {
@@ -65,15 +82,34 @@ export default class ConverterView extends Component {
     this.addRateToList(value);
   }
 
-  render () {
+  render() {
     return (
-      <div>
+      <Card style={{width:300}}>
+        <AppBar
+          showMenuIconButton={false}
+          title="Calculator"
+          iconElementRight={this.props.onRefreshRequest !== undefined &&
+            <IconButton
+              onClick={this.props.onRefreshRequest}
+              tooltip="Refresh rates"
+              tooltipPosition="bottom-left">
+              <NavigationRefresh />
+            </IconButton>}
+        />
+        {this.state.rates.length === 0 && <LinearProgress mode="indeterminate" />}
         <div style={{padding: '20px 15px 16px 16px'}}>
           <div>
-            <TextField id="amount" floatingLabelText="Enter amount of BTC" hintText="0" onKeyUp={this.updateAmount.bind(this)} />
+            <TextField
+              floatingLabelText="Enter amount of BTC"
+              hintText="0"
+              onKeyUp={this.updateAmount.bind(this)}
+              errorText={this.state.hasAmountError ? 'Please use only numbers and dot for decimal separator' : ''}
+            />
           </div>
           {this.state.removedRates.length > 0 &&
-          <SelectField onChange={this.handleCurrenciesSelectFieldChange.bind(this)} hintText="Add currency">
+          <SelectField
+            onChange={this.handleCurrenciesSelectFieldChange.bind(this)}
+            hintText="Add currency">
           {this.state.removedRates.map(rate =>
             <MenuItem key={rate.code} value={rate} primaryText={rate.code} />)}
           </SelectField>
@@ -81,9 +117,25 @@ export default class ConverterView extends Component {
         </div>
         <List>
         {this.state.displayedRates.map(rate =>
-          <ListItem key={rate.code} primaryText={rate.code} secondaryText={(rate.rate_float * this.state.amount).toFixed(2)} rightIcon={<ActionDelete onClick={this.removeRateFromList.bind(this, rate)} />} />)}
+          <ListItem
+            key={rate.code}
+            primaryText={rate.code}
+            secondaryText={(rate.rate_float * this.state.amount).toFixed(2)}
+            rightIconButton={
+              <IconButton
+                tooltip="Remove from list"
+                tooltipPosition="bottom-left">
+                <ActionDelete
+                  onClick={this.removeRateFromList.bind(this, rate)}
+                  hoverColor="red"
+                />
+              </IconButton>
+            }
+            disabled={true}
+
+          />)}
         </List>
-      </div>
+      </Card>
     );
   }
 }

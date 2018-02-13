@@ -1,9 +1,5 @@
 import React, { Component } from 'react';
 import ConverterView from './ConverterView';
-import CircularProgress from 'material-ui/CircularProgress';
-import LinearProgress from 'material-ui/LinearProgress';
-import Subheader from 'material-ui/Subheader';
-import Card from 'material-ui/Card';
 
 export default class Converter extends Component {
 
@@ -22,7 +18,7 @@ export default class Converter extends Component {
       let result = await(await fetch('https://api.coindesk.com/v1/bpi/currentprice.json')).json();
       console.log(result);
       this.setState({
-        loading: false,
+        loading: true,
         rates: Object.values(result.bpi)
       });
 
@@ -34,13 +30,7 @@ export default class Converter extends Component {
 
   render() {
     return (
-      <Card style={{width:300}}>
-        <Subheader>Crypto Currency Calculator</Subheader>
-        { (this.state.loading)
-          // ? <CircularProgress size={60} thickness={7} style={{left: '50%', marginLeft: -30}} />
-          ? <LinearProgress mode="indeterminate" />
-          : <ConverterView rates={this.state.rates}/> }
-      </Card>
+      <ConverterView rates={this.state.rates} onRefreshRequest={this.fetchRates.bind(this)}/>
     );
   }
 }
