@@ -1,13 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import Converter from './converter';
+import Converter from './converter/Converter';
 import registerServiceWorker from './registerServiceWorker';
 
 ReactDOM.render(
-  <MuiThemeProvider>
-    <Converter />
-  </MuiThemeProvider>,
+  <Converter />,
   document.getElementById('root'));
 registerServiceWorker();

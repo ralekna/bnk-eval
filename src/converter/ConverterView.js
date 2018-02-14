@@ -10,6 +10,7 @@ import PropTypes from 'prop-types';
 import ActionDelete from 'material-ui/svg-icons/action/delete';
 import NavigationRefresh from 'material-ui/svg-icons/navigation/refresh';
 import IconButton from 'material-ui/IconButton';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import * as R from 'ramda';
 
 export default class ConverterView extends Component {
@@ -66,7 +67,7 @@ export default class ConverterView extends Component {
     const amount = event.target.value;
     const hasAmountError = !/^\d*\.?\d*$/.test(amount.trim());
     this.setState(prevState => ({
-      amount: hasAmountError ? prevState.amount : amount,
+      amount: hasAmountError ? prevState.amount : Number(amount),
       hasAmountError
     }));
   }
@@ -84,63 +85,69 @@ export default class ConverterView extends Component {
 
   render() {
     return (
-      <Card style={{width:300}}>
-        <AppBar
-          showMenuIconButton={false}
-          title="Calculator"
-          iconElementRight={this.props.onRefreshRequest !== undefined &&
-            <IconButton
-              onClick={this.props.onRefreshRequest}
-              tooltip="Refresh rates"
-              tooltipPosition="bottom-left">
-              <NavigationRefresh />
-            </IconButton>}
-        />
-        {this.state.rates.length === 0 && <LinearProgress mode="indeterminate" />}
-
-        <div style={{padding: '16px'}}>
-          <div>
-            <TextField
-              floatingLabelText="Enter amount of BTC"
-              hintText="0"
-              onKeyUp={this.updateAmount.bind(this)}
-              errorText={this.state.hasAmountError ? 'Please use only numbers and dot for decimal separator' : ''}
-            />
-          </div>
-          {this.state.removedRates.length > 0 &&
-          <SelectField
-            onChange={this.handleCurrenciesSelectFieldChange.bind(this)}
-            hintText="Add currency">
-          {this.state.removedRates.map(rate =>
-            <MenuItem key={rate.code} value={rate} primaryText={rate.code} />)}
-          </SelectField>
-          }
-        </div>
-        <List>
-        {this.state.displayedRates.map(rate =>
-          <ListItem
-            key={rate.code}
-            primaryText={rate.code}
-            secondaryText={(rate.rate_float * this.state.amount).toFixed(2)}
-            rightIconButton={
-              <IconButton
-                tooltip="Remove from list"
+      <MuiThemeProvider>
+        <Card style={{width:300}}>
+          <AppBar
+            showMenuIconButton={false}
+            title="Calculator"
+            iconElementRight={this.props.onRefreshRequest
+              ? <IconButton
+                onClick={this.props.onRefreshRequest}
+                tooltip="Refresh rates"
                 tooltipPosition="bottom-left">
-                <ActionDelete
-                  onClick={this.removeRateFromList.bind(this, rate)}
-                  hoverColor="red"
-                />
+                <NavigationRefresh />
               </IconButton>
+              : null
             }
-            disabled={true}
+          />
+          {this.state.rates.length === 0 && <LinearProgress mode="indeterminate" />}
 
-          />)}
-        </List>
-        <div style={{fontSize: '11px', padding: '16px'}}>
-          {this.props.status !== undefined && <div style={{color: 'rgba(0, 0, 0, 0.54)'}}>{this.props.status}</div>}
-          {this.props.error !== undefined && <div style={{color: 'rgba(255, 0, 0, 1)'}}>{this.props.error}</div>}
-        </div>
-      </Card>
+          <div style={{padding: '16px'}}>
+            <div>
+              <TextField
+                id="amountInput"
+                floatingLabelText="Enter amount of BTC"
+                hintText="0"
+                onKeyUp={this.updateAmount.bind(this)}
+                onChange={this.updateAmount.bind(this)}
+                errorText={this.state.hasAmountError ? 'Please use only numbers and dot for decimal separator' : ''}
+              />
+            </div>
+            {this.state.removedRates.length > 0 &&
+            <SelectField
+              onChange={this.handleCurrenciesSelectFieldChange.bind(this)}
+              hintText="Add currency">
+            {this.state.removedRates.map(rate =>
+              <MenuItem key={rate.code} value={rate} primaryText={rate.code} />)}
+            </SelectField>
+            }
+          </div>
+          <List>
+          {this.state.displayedRates.map(rate =>
+            <ListItem
+              key={rate.code}
+              primaryText={rate.code}
+              secondaryText={(rate.rate_float * this.state.amount).toFixed(2)}
+              rightIconButton={
+                <IconButton
+                  tooltip="Remove from list"
+                  tooltipPosition="bottom-left">
+                  <ActionDelete
+                    onClick={this.removeRateFromList.bind(this, rate)}
+                    hoverColor="red"
+                  />
+                </IconButton>
+              }
+              disabled={true}
+
+            />)}
+          </List>
+          <div style={{fontSize: '11px', padding: '16px'}}>
+            {this.props.status !== undefined && <div style={{color: 'rgba(0, 0, 0, 0.54)'}}>{this.props.status}</div>}
+            {this.props.error !== undefined && <div style={{color: 'rgba(255, 0, 0, 1)'}}>{this.props.error}</div>}
+          </div>
+        </Card>
+      </MuiThemeProvider>
     );
   }
 }
